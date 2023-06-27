@@ -6,12 +6,35 @@ export default function Home() {
 
   const [streamedData, setStreamedData] = useState("");
 
-  const handleChatSubmit = (e) => {
+  const handleChatSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    console.log(formData.get("prompt"));
+    
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      body: JSON.stringify({ prompt: formData.get("prompt"), }), 
+      headers: {
+        "Content-Type": "application/json",
+      },
+    
+    });
+
+    const reader = response.body.getReader();
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    const text = new TextDecoder().decode(value);
+    setStreamedData((prevData) => prevData + text);
+
   };
+
+  
 
   const handleClearChat = () => {
     setStreamedData("");
@@ -58,4 +81,5 @@ export default function Home() {
 
     </main>
   )
+}
 }
